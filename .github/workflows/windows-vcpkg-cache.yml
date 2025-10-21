@@ -1,0 +1,58 @@
+name: Windows vcpkg with GitHub Packages Cache
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  packages: write
+
+env:
+  USERNAME: ${{ github.repository_owner }}
+  VCPKG_EXE: ${{ github.workspace }}/vcpkg/vcpkg.exe
+  FEED_URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+  VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json,readwrite"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Checkout vcpkg
+      uses: actions/checkout@v4
+      with:
+        repository: microsoft/vcpkg
+        path: vcpkg
+    
+    - name: Bootstrap vcpkg
+      shell: pwsh
+      run: ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.bat
+    
+    - name: Add NuGet sources
+      shell: pwsh
+      run: |
+        .$(${{ env.VCPKG_EXE }} fetch nuget) `
+          sources add `
+          -Source "${{ env.FEED_URL }}" `
+          -StorePasswordInClearText `
+          -Name GitHubPackages `
+          -UserName "${{ env.USERNAME }}" `
+          -Password "${{ secrets.GITHUB_TOKEN }}"
+        .$(${{ env.VCPKG_EXE }} fetch nuget) `
+          setapikey "${{ secrets.GITHUB_TOKEN }}" `
+          -Source "${{ env.FEED_URL }}"
+    
+    - name: Install vcpkg packages from manifest
+      shell: pwsh
+      run: |
+        # Install packages defined in vcpkg.json (manifest mode)
+        Write-Host "Installing packages from vcpkg.json manifest..."
+        ${{ env.VCPKG_EXE }} install --triplet x64-windows
+        Write-Host "Binary caching is enabled: $env:VCPKG_BINARY_SOURCES"
+
