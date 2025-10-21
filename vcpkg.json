@@ -1,13 +1,22 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "vcpkg-binary-cache",
-  "version": "0.1.0",
   "description": "Example project using vcpkg with GitHub Packages binary cache",
   "dependencies": [
+    {
+      "name": "kfr",
+      "features": [
+        "dft"
+      ]
+    },
     "zlib",
     "fmt",
-    "nlohmann-json"
-  ],
-  "builtin-baseline": "faf665cf8aca288b636d9de887f5cdfa3cff1a9e"
+    "nlohmann-json",
+    "rapidcsv",
+    "benchmark",
+    "cli11",
+    "gtest",
+    "benchmark",
+    "stringzilla"
+  ]
 }
-
