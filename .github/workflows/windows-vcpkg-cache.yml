@@ -15,11 +15,12 @@ env:
   VCPKG_EXE: ${{ github.workspace }}/vcpkg/vcpkg.exe
   FEED_URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
   VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json,readwrite"
+  LLVMToolsVersion: 20
+  LLVMToolsFullVersion: 20.1.8
 
 jobs:
   build:
     runs-on: windows-latest
-    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -33,6 +34,13 @@ jobs:
     - name: Bootstrap vcpkg
       shell: pwsh
       run: ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.bat
+
+    - name: Set up LLVM
+      shell: pwsh
+      run: |
+        choco install llvm --version=${{ env.LLVMToolsFullVersion }}
+        $LLVMInstallDir = (Get-Command clang-cl.exe).Path | Split-Path -Parent | Split-Path -Parent
+        Add-Content -Path $Env:GITHUB_ENV -Value "LLVMInstallDir=$LLVMInstallDir"
     
     - name: Add NuGet sources
       shell: pwsh

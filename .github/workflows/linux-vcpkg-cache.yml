@@ -12,6 +12,7 @@ permissions:
 
 env:
   USERNAME: ${{ github.repository_owner }}
+  LLVMToolsVersion: 20
   VCPKG_EXE: ${{ github.workspace }}/vcpkg/vcpkg
   FEED_URL: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
   VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json,readwrite"
@@ -39,6 +40,11 @@ jobs:
     - name: Bootstrap vcpkg
       shell: bash
       run: ${{ github.workspace }}/vcpkg/bootstrap-vcpkg.sh
+
+    - name: Set up LLVM
+      shell: bash
+      run: |
+        wget -O - https://apt.llvm.org/llvm.sh | sudo bash -s - ${{ env.LLVM_VERSION }}
     
     - name: Add NuGet sources
       shell: bash
@@ -61,4 +67,3 @@ jobs:
         echo "Installing packages from vcpkg.json manifest..."
         ${{ env.VCPKG_EXE }} install --triplet x64-linux
         echo "Binary caching is enabled: $VCPKG_BINARY_SOURCES"
-
